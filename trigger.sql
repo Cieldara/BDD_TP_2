@@ -13,7 +13,7 @@ CREATE OR REPLACE TRIGGER maj_nb_maladie_on_delete
 
 CREATE OR REPLACE TRIGGER maj_nb_maladie_on_insert
       AFTER  
-        INSERT 
+        INSERT
       ON LesMaladies
       FOR EACH ROW  
     BEGIN
@@ -29,14 +29,14 @@ CREATE OR REPLACE TRIGGER cage_bad_fonction
         INSERT OR UPDATE ON lesAnimaux
       FOR EACH ROW  
       DECLARE 
-        lol varchar2(20);
+        func varchar2(20);
       BEGIN
 
 
-      SELECT fonction INTO lol from lesCages where noCage = :new.noCage;
+      SELECT fonction INTO func from lesCages where noCage = :new.noCage;
       
         /*Si la fonction */
-        IF lol!=:new.fonction_cage THEN
+        IF func!=:new.fonction_cage THEN
           raise_application_error(-20001, 'ERREUR: Vous tentez dinserer dans une cage avec une mauvaise fonction');
         END IF;
       END;
@@ -59,4 +59,5 @@ CREATE OR REPLACE TRIGGER non_garde
         END IF;
       END;
 /
+
 

@@ -7,8 +7,6 @@ drop table LesEMployes ;
 drop table LesCages ;
 drop table LesHistoiresAff ;
 
-COMMIT;
-
 create table LesCages (
 	noCage number(3),
 	fonction varchar2(20),
@@ -74,15 +72,13 @@ create table LesHistoiresAff (
 	constraint LesHistoiresAff_C1 primary key (dateFin, noCage, nomE)
 );
 
-COMMIT;
-
 insert into LesCages values (11,'fauve', 10);
 insert into LesCages values (1,'fosse', 1);
 insert into LesCages values (2,'aquarium', 1);
 insert into LesCages values (3,'petits oiseaux',2);
 insert into LesCages values (4,'grand aquarium',1);
 insert into LesCages values (12,'fauve', 10);
-
+insert into LesCages values (13,'fauve',10);
 
 
 insert into LesEmployes values ('Verdier'  ,       'Noumea' );
@@ -119,6 +115,7 @@ insert into LesGardiens values (11      ,       'Labbe' );
 insert into LesGardiens values (1       ,       'Lachaize' );
 insert into LesGardiens values (3       ,       'Lachaize' );
 insert into LesGardiens values (12      ,       'Lachaize' );
+insert into LesGardiens values (13      ,       'Labbe' );
 
 insert into LesAnimaux values ('Charly', 'male',   'lion', 'fauve',  'Kenya',  2010,   12,2);
 insert into LesAnimaux values ('Arthur', 'male',   'ours', 'fosse',  'France', 2000,   1,0 );
@@ -133,3 +130,5 @@ insert into LesMaladies values ('Milou'         , 'angine' );
 insert into LesMaladies values ('Chloe'         , 'grippe' );
 
 COMMIT;
+
+start trigger.sql

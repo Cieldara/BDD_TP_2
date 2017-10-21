@@ -27,25 +27,28 @@ public class squelette_appli {
             // Desactivation de l'autocommit
             conn.setAutoCommit(false);
             System.out.println("Autocommit disabled");
-
-            System.out.println("Choix de l'action a effectuer :"
-                    + "\n\t-0 pour changer la fonction d'une cage."
-                    + "\n\t-1 pour ajouter un animal."
-                    + "\n\t-2 pour changer un animal de cage."
-                    + "\n\t-Autre chose pour quitter le programme");
-            int choix = LectureClavier.lireEntier("");
-            switch (choix) {
-                case 0:
-                    updateCage();
-                    break;
-                case 1:
-                    addAnimal();
-                    break;
-                case 2:
-                    moveAnimal();
-                    break;
-                default:
-                    break;
+            boolean cont = true;
+            while (cont) {
+                System.out.println("Choix de l'action a effectuer :"
+                        + "\n\t-u pour changer la fonction d'une cage."
+                        + "\n\t-a pour ajouter un animal."
+                        + "\n\t-m pour changer un animal de cage."
+                        + "\n\t-Autre chose pour quitter le programme");
+                char choix = LectureClavier.lireChar("");
+                switch (choix) {
+                    case 'u':
+                        updateCage();
+                        break;
+                    case 'a':
+                        addAnimal();
+                        break;
+                    case 'm':
+                        moveAnimal();
+                        break;
+                    default:
+                        cont = false;
+                        break;
+                }
             }
             conn.close();
             System.out.println("bye.");
@@ -67,6 +70,7 @@ public class squelette_appli {
         try {
             PreparedStatement updateFonctionPrepared = null;
             Statement stmt = conn.createStatement();
+            System.out.println("Voici les cages disponibles :");
             ResultSet rs = stmt.executeQuery("SELECT * FROM LesCages");
             while (rs.next()) {
                 int numeroCage = rs.getInt("noCage");
@@ -88,44 +92,61 @@ public class squelette_appli {
             updateFonctionPrepared.setInt(2, cageModifier);
 
             updateFonctionPrepared.executeUpdate();
-
             conn.commit();
+            System.out.println("Mise à jour terminée.\n");
         } catch (SQLException s) {
-            conn.close();
+            
+            s.printStackTrace();
+	    System.out.println(s.getMessage());
         }
 
     }
 
     public static void addAnimal() throws SQLException {
-        System.out.println("MAJ de la cage");
+        System.out.println("Ajout d'un animal : par defaut son nombre de maladies sera mis a 0.");
         try {
             PreparedStatement updateFonctionPrepared = null;
 
-            Statement stmt = conn.createStatement();
+            String selectFonction
+                    = "SELECT distinct(noCage) FROM LesCages NATURAL JOIN LesAnimaux where fonction = ? and type_an = ? UNION (Select noCage from LesCages where fonction = ? and noCage not in (Select noCage from LesAnimaux))";
 
-            System.out.println("Liste des cages");
-            ResultSet rs = stmt.executeQuery("SELECT * FROM LesCages");
-            while (rs.next()) {
-                int numeroCage = rs.getInt("noCage");
-                System.out.println(numeroCage + "");
-            }
-
-            System.out.println("Donnez le nom :");
-            String nom = LectureClavier.lireChaine();;
-            System.out.println("Donnez le sexe :");
-            String sexe = LectureClavier.lireChaine();
-            System.out.println("Donnez le type :");
-            String type = LectureClavier.lireChaine();
             System.out.println("Donnez la fonction cage :");
             String fctCage = LectureClavier.lireChaine();
-            System.out.println("Donnez le pays :");
-            String pays = LectureClavier.lireChaine();
-            System.out.println("Donnez l'annee de naissance :");
-            int anNais = LectureClavier.lireEntier("");
+            System.out.println("Donnez le type :");
+            String type = LectureClavier.lireChaine();
+            PreparedStatement stmt = conn.prepareStatement(selectFonction);
+            stmt.setString(1, fctCage);
+            stmt.setString(2, type);
+            stmt.setString(3, fctCage);
+
+            System.out.println("Liste des cages possibles : \n");
+            ResultSet rs = stmt.executeQuery();
+            Collection<Integer> cagePossibles = new ArrayList<Integer>();
+            while (rs.next()) {
+                int numeroCage = rs.getInt("noCage");
+                cagePossibles.add(numeroCage);
+                System.out.println(numeroCage + "");
+            }
+            if (cagePossibles.size() == 0) {
+                System.out.println("Erreur : Aucune cage compatible.\n");
+                return;
+            }
+
             System.out.println("Donnez le no cage :");
             int noCage = LectureClavier.lireEntier("");
-            System.out.println("Donnez le nombre de maladies :");
-            int nbMal = LectureClavier.lireEntier("");
+            if (!cagePossibles.contains(noCage)) {
+                System.out.println("Erreur : la cage " + noCage + " est incompatible ou n'existe pas, mais on continue pour possiblement tester le trigger 2.\n");
+                //return; Decommentez la si vous souhaitez que le programme s'arrete
+            }
+            System.out.println("Donnez le nom :");
+            String nom = LectureClavier.lireChaine();;
+            System.out.println("Donnez le sexe : male ou femelle");
+            String sexe = LectureClavier.lireChaine();
+            System.out.println("Donnez le pays :");
+            String pays = LectureClavier.lireChaine();
+            System.out.println("Donnez l'annee de naissance : au moins 1900 ");
+            int anNais = LectureClavier.lireEntier("");
+            int nbMal = 0;
 
             String updateFonction
                     = "INSERT into lesAnimaux values (?,?,?,?,?,?,?,?)";
@@ -144,8 +165,11 @@ public class squelette_appli {
             updateFonctionPrepared.executeUpdate();
 
             conn.commit();
+            System.out.println("Ajout terminé.\n");
         } catch (SQLException s) {
-            conn.close();
+          
+            s.printStackTrace();
+	    System.out.println(s.getMessage());
         }
 
     }
@@ -153,21 +177,33 @@ public class squelette_appli {
     public static void moveAnimal() throws SQLException {
         System.out.println("Mise a jour de la cage d'un animal");
         PreparedStatement updateFonctionPrepared = null;
-        System.out.println("Donnez le nom :");
-        String nom = LectureClavier.lireChaine();
+
         String fonction = "";
-        String requete = "SELECT * FROM lesAnimaux where nomA ='" + nom + "'";
-        System.out.println(requete);
+        String type = "";
         try {
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(requete);
+            ResultSet rs = stmt.executeQuery("SELECT * FROM lesAnimaux");
+            System.out.println("Animaux disponibles : ");
+            Collection<String> animauxPossibles = new ArrayList<String>();
+            while (rs.next()) {
+                System.out.println(rs.getString("nomA") + " " + rs.getString("fonction_Cage") + " " + rs.getString("type_an"));
+                animauxPossibles.add(rs.getString("nomA"));
+            }
+            System.out.println("Donnez le nom :");
+            String nom = LectureClavier.lireChaine();
+            if(!animauxPossibles.contains(nom)){
+                System.out.println("Erreur : Animal inconnu\n");
+            }
+            stmt = conn.createStatement();
+            String requete = "SELECT * FROM lesAnimaux where nomA ='" + nom + "'";
+            rs = stmt.executeQuery(requete);
             while (rs.next()) {
                 fonction = rs.getString("fonction_Cage");
-
+                type = rs.getString("type_an");
             }
 
-            System.out.println("Liste des cages");
-            rs = stmt.executeQuery("SELECT * FROM LesCages where fonction = '" + fonction + "'");
+            System.out.println("Liste des cages possibles : \n");
+            rs = stmt.executeQuery("SELECT distinct(noCage) FROM LesCages NATURAL JOIN LesAnimaux where fonction = '" + fonction + "' AND type_an = '" + type + "' UNION (Select noCage from LesCages where fonction = '" + fonction + "' and noCage not in (Select noCage from LesAnimaux))");
 
             int numeroCage;
             Collection<Integer> cagePossibles = new ArrayList<Integer>();
@@ -177,11 +213,16 @@ public class squelette_appli {
                 System.out.println(numeroCage);
             }
 
+            if (cagePossibles.size() == 0) {
+                System.out.println("Erreur : Aucune cage compatible.\n");
+                return;
+            }
+
             System.out.println("Donnez le nouveau numero de cage :");
             int noCage = LectureClavier.lireEntier("");
             if (!cagePossibles.contains(noCage)) {
-                System.out.println("Erreur : la cage " + noCage + " est incompatible.");
-                return;
+                System.out.println("Erreur : la cage " + noCage + " est incompatible ou n'existe pas, mais on continue pour possiblement tester le trigger 2.");
+                //return; Décommenter la si vous souhaitez que le programme s'arrete
             }
 
             String updateFonction
@@ -195,8 +236,11 @@ public class squelette_appli {
             updateFonctionPrepared.executeUpdate();
 
             conn.commit();
+            System.out.println("Fin de deplacement de cage._\n");
         } catch (SQLException s) {
-            conn.close();
+            
+            s.printStackTrace();
+	    System.out.println(s.getMessage());
         }
     }
 }
