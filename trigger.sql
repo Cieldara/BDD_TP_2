@@ -1,31 +1,3 @@
- /*CREATE OR REPLACE TRIGGER maj_nb_maladie
-      AFTER 
-        INSERT OR 
-        DELETE 
-      ON LesMaladies
-      FOR EACH ROW  
-    DECLARE
-      nb NUMBER;
-      incr NUMBER;
-      name CHAR(100);
-    BEGIN
-
-    incr = 1;
-    IF INSERTING THEN
-      name = :new.nomA;
-    ELSIF DELETING THEN
-      name = :old.nomA;
-      incr=-1;
-    END IF;
-
-    SELECT nb_maladies INTO nb FROM lesAnimaux where nomA = name;
-
-    UPDATE lesAnimaux set nb_maladies = nb+incr;
-
-    END;*/
-
-
-
 CREATE OR REPLACE TRIGGER maj_nb_maladie_on_delete
       AFTER  
         DELETE 
@@ -41,12 +13,12 @@ CREATE OR REPLACE TRIGGER maj_nb_maladie_on_delete
 
 CREATE OR REPLACE TRIGGER maj_nb_maladie_on_insert
       AFTER  
-        DELETE 
+        INSERT 
       ON LesMaladies
       FOR EACH ROW  
     BEGIN
 
-    UPDATE lesAnimaux set nb_maladies = nb_maladies-1 WHERE nomA = :new.nomA;
+    UPDATE lesAnimaux set nb_maladies = nb_maladies+1 WHERE nomA = :new.nomA;
 
     END;
 /
@@ -88,5 +60,3 @@ CREATE OR REPLACE TRIGGER non_garde
       END;
 /
 
-
-insert into LesAnimaux values ('popo', 'femelle', 'fauve',  'fauve',  'Kenya',  2012,      12, 0 );

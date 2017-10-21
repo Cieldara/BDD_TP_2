@@ -7,6 +7,8 @@ drop table LesEMployes ;
 drop table LesCages ;
 drop table LesHistoiresAff ;
 
+COMMIT;
+
 create table LesCages (
 	noCage number(3),
 	fonction varchar2(20),
@@ -72,6 +74,8 @@ create table LesHistoiresAff (
 	constraint LesHistoiresAff_C1 primary key (dateFin, noCage, nomE)
 );
 
+COMMIT;
+
 insert into LesCages values (11,'fauve', 10);
 insert into LesCages values (1,'fosse', 1);
 insert into LesCages values (2,'aquarium', 1);
@@ -127,3 +131,5 @@ insert into LesMaladies values ('Charly'        , 'rage de dents' );
 insert into LesMaladies values ('Charly'        , 'grippe' );
 insert into LesMaladies values ('Milou'         , 'angine' );
 insert into LesMaladies values ('Chloe'         , 'grippe' );
+
+COMMIT;
