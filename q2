@@ -1,0 +1,47 @@
+
+moveAnimal
+T1:
+SELECT * FROM lesAnimaux where nomA ='"+nom+"' 
+SELECT * FROM LesCages where fonction = '" + fonction + "'
+UPDATE lesAnimaux SET noCage=? where nomA=?
+COMMIT;
+
+addAnimal 
+T2:
+SELECT * FROM LesCages
+INSERT into lesAnimaux values (?,?,?,?,?,?,?,?)
+COMMIT;
+
+updateCage
+T3:
+SELECT * FROM LesCages
+update LesCages set fonction = ? where noCage = ?";
+COMMIT;
+
+
+
+
+
+Niveau d’isolation 		Lecture ‘sale’
+(													       	Lecture ‘non-répétable’
+(Nonrepeatable read) 					Lecture ‘fantôme’
+(Phantom read)
+READ UNCOMMITTED 		Permise 			Permise 			Permise
+READ COMMITTED 	– 							Permise 			Permise
+REPEATABLE READ 		– 	– 									Permise
+SERIALIZABLE 	– 		– 	– 
+
+
+
+Lecture Non-Répétable : Si exec t1 puis encore t1 pas le même résult
+Lecture 
+
+Repeatable Read:
+Si deux select l'un après l'autre:
+On nous garanti que dans le deuxième select on aura le même jeu de données que dans le premier select, mais de nouvelles données peuvent être select en plus
+
+Read commited:
+ A concurrent transaction may update the record, delete it, insert new records. The second select will always see the new data.
+
+
+ Tout serializable
